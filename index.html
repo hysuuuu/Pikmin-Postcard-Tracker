@@ -256,8 +256,21 @@
     </div>
 
     <div class="section">
-      <h3>匯出資料</h3>
+      <h3>資料管理</h3>
+      <div style="font-size: 12px">
+        CSV 欄位：「明信片」、「好友」、「寄出日期」<br />匯入資料時，需至少有「明信片」、「好友」兩個欄位
+      </div>
       <button onclick="exportCSV()">匯出 CSV</button>
+      <button onclick="clearAllData()">清除資料</button>
+      <button onclick="document.getElementById('csvFileInput').click()">
+        匯入 CSV
+      </button>
+      <input
+        type="file"
+        id="csvFileInput"
+        accept=".csv"
+        style="display: none"
+      />
     </div>
 
     <div class="section">
@@ -265,7 +278,7 @@
         <table id="recordsTable">
           <thead>
             <tr>
-              <th>明信片名稱</th>
+              <th>明信片</th>
               <th>【好友】寄送日期</th>
             </tr>
           </thead>

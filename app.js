@@ -8,6 +8,12 @@ window.onload = function () {
   renderFriends();
   renderPostcards();
   renderRecordsTable();
+
+  // Setup CSV file input listener
+  const fileInput = document.getElementById("csvFileInput");
+  if (fileInput) {
+    fileInput.addEventListener("change", importCSV);
+  }
 };
 
 // Add friend
@@ -152,7 +158,7 @@ function renderPostcards() {
 
 function exportCSV() {
   let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-  csvContent += "明信片名稱,好友,寄出日期\n";
+  csvContent += "明信片,好友,寄出日期\n";
 
   records.forEach((record) => {
     record.friends.forEach((friend) => {
@@ -350,4 +356,109 @@ function renderRecordsTable() {
     friendsCell.style.whiteSpace = "pre-line";
     friendsCell.style.lineHeight = "1.6";
   });
+}
+
+// Clear all data
+function clearAllData() {
+  if (confirm("確定要清除資料嗎？此操作無法復原！")) {
+    if (confirm("再次確認：清除所有資料？")) {
+      localStorage.clear();
+      friends = [];
+      records = [];
+      document.getElementById("newFriendName").value = "";
+      document.getElementById("postcardName").value = "";
+      document.querySelectorAll(".friend-check").forEach((cb) => {
+        cb.checked = false;
+      });
+      exitFriendEditMode();
+      exitEditMode();
+      renderFriends();
+      renderPostcards();
+      renderRecordsTable();
+      alert("所有資料已清除");
+    }
+  }
+}
+
+// Exit page
+function exitPage() {
+  window.close();
+}
+
+// Import CSV file
+function importCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // Check if current data is empty
+  if (friends.length > 0 || records.length > 0) {
+    alert("匯入前請先清除所有資料。");
+    event.target.value = ""; // Reset file input
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const content = e.target.result;
+    const lines = content.split("\n").filter((line) => line.trim() !== "");
+
+    // Validate format: first line should be header, skip if it's the expected header
+    let startIndex = 0;
+    if (
+      lines[0].toLowerCase().includes("明信片") ||
+      lines[0].toLowerCase().includes("postcard")
+    ) {
+      startIndex = 1;
+    }
+
+    const newRecords = [];
+    for (let i = startIndex; i < lines.length; i++) {
+      const parts = lines[i].split(",").map((p) => p.trim());
+
+      // Check if row has 2 or 3 columns (date is optional)
+      if (parts.length < 2 || parts.length > 3) {
+        alert(`CSV格式錯誤，明信片和好友不能為空（寄出日期可為空）\n`);
+        event.target.value = ""; // Reset file input
+        return;
+      }
+
+      const [postcard, friend, date] = parts;
+
+      // Validate that postcard and friend are non-empty
+      if (!postcard || !friend) {
+        alert(`CSV格式錯誤，明信片和好友不能為空（寄出日期可為空）\n`);
+        event.target.value = ""; // Reset file input
+        return;
+      }
+
+      // Check if friend already exists, if not add to friends list
+      if (!friends.includes(friend)) {
+        friends.push(friend);
+      }
+
+      newRecords.push({
+        postcard: postcard,
+        friends: [friend],
+        date: date || new Date().toLocaleDateString(), // Use current date if empty
+      });
+    }
+
+    // If validation passed, import records
+    if (newRecords.length > 0) {
+      records = records.concat(newRecords);
+      localStorage.setItem("pikmin_friends", JSON.stringify(friends));
+      localStorage.setItem("pikmin_records", JSON.stringify(records));
+
+      renderFriends();
+      renderPostcards();
+      renderRecordsTable();
+      alert(`成功匯入`);
+    } else {
+      alert("CSV檔案中沒有有效的資料行");
+    }
+
+    event.target.value = ""; // Reset file input
+  };
+
+  reader.readAsText(file);
 }
