@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Pikmin Postcard Tracker</title>
+    <link rel="manifest" href="manifest.json" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        padding: 20px;
+        max-width: 600px;
+        margin: 0 auto;
+        background: #ffffff;
+      }
+      h2 {
+        text-align: center;
+        color: #2c3e50;
+        font-size: 28px;
+        margin-bottom: 30px;
+      }
+      .section {
+        margin-bottom: 25px;
+        padding: 20px;
+        background: #fafafa;
+        border: 1px solid #ddd;
+      }
+      h3 {
+        color: #333;
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 16px;
+        font-weight: 600;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 8px;
+      }
+      input[type="text"] {
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+        width: 100%;
+        margin-bottom: 10px;
+      }
+      input[type="text"]:focus {
+        outline: none;
+        border-color: #666;
+      }
+      button {
+        padding: 8px 16px;
+        background: #646487;
+        color: white;
+        border: 1px solid #555;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        margin-right: 10px;
+        margin-top: 10px;
+      }
+      button:hover {
+        background: #8a8ac4;
+      }
+      button:active {
+        background: #444;
+      }
+      #friendList {
+        margin-top: 15px;
+        padding: 10px 15px;
+        background: #fff;
+        border: 1px solid #ddd;
+        min-height: 40px;
+      }
+      .friend-list-header {
+        font-weight: 600;
+        color: #555;
+        font-size: 12px;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .friend-list-items {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0;
+        line-height: 1.8;
+      }
+      .friend-item {
+        color: #333;
+        font-size: 14px;
+        cursor: pointer;
+        padding: 2px 0;
+        margin-right: 20px;
+      }
+      .friend-item:hover {
+        color: #000;
+        text-decoration: underline;
+      }
+      .friend-item::before {
+        content: "•";
+        color: #999;
+        margin-right: 6px;
+      }
+      .empty-state {
+        color: #999;
+        font-style: italic;
+        font-size: 13px;
+      }
+      #postcardList {
+        margin-top: 15px;
+        padding: 10px 15px;
+        background: #fff;
+        border: 1px solid #ddd;
+        min-height: 40px;
+      }
+      .postcard-list-header {
+        font-weight: 600;
+        color: #555;
+        font-size: 12px;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .postcard-list-items {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0;
+        line-height: 1.8;
+      }
+      .postcard-list-item {
+        color: #333;
+        font-size: 14px;
+        cursor: pointer;
+        padding: 2px 0;
+        margin-right: 20px;
+      }
+      .postcard-list-item:hover {
+        color: #000;
+        text-decoration: underline;
+      }
+      .postcard-list-item::before {
+        content: "•";
+        color: #999;
+        margin-right: 6px;
+      }
+      #checkboxes {
+        margin: 15px 0;
+        padding: 12px;
+        background: #fff;
+        border: 1px solid #ddd;
+      }
+      #checkboxes label {
+        display: inline-block;
+        margin-right: 15px;
+        margin-bottom: 8px;
+        padding: 4px 8px;
+        background: #fafafa;
+        cursor: pointer;
+        border: 1px solid #ddd;
+      }
+      #checkboxes label:hover {
+        background: #f0f0f0;
+      }
+      #checkboxes input[type="checkbox"] {
+        margin-right: 5px;
+        cursor: pointer;
+      }
+      #searchResult {
+        margin-top: 15px;
+        padding: 10px;
+        background: #fff;
+        color: #333;
+        font-weight: 400;
+        border: 1px solid #ddd;
+        border-left: 3px solid #666;
+        min-height: 20px;
+      }
+      #recordsTable {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+        font-size: 13px;
+      }
+      #recordsTable th {
+        background: #f0f0f0;
+        padding: 8px;
+        text-align: left;
+        font-weight: 600;
+        border: 1px solid #ddd;
+        color: #333;
+      }
+      #recordsTable th:first-child {
+        width: 30%;
+      }
+      #recordsTable td {
+        padding: 8px;
+        border: 1px solid #ddd;
+        color: #555;
+      }
+      #recordsTable tr:nth-child(even) {
+        background: #fafafa;
+      }
+      #recordsTable tr:hover {
+        background: #f5f5f5;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>皮克敏明信片紀錄</h2>
+
+    <div class="section">
+      <h3>管理好友清單</h3>
+      <input type="text" id="newFriendName" placeholder="輸入好友名稱" />
+      <div id="friendList"></div>
+      <button id="addFriendBtn" onclick="addFriend()">新增好友</button>
+      <button
+        id="deleteFriendBtn"
+        onclick="deleteCurrentFriend()"
+        style="display: none; background: #999"
+      >
+        刪除此好友
+      </button>
+      <button
+        id="cancelFriendBtn"
+        onclick="cancelFriendEdit()"
+        style="display: none; background: #999"
+      >
+        取消編輯
+      </button>
+    </div>
+
+    <div class="section">
+      <h3>紀錄寄出明信片</h3>
+      <input type="text" id="postcardName" placeholder="輸入明信片名稱" />
+      <div id="postcardList"></div>
+      <div id="checkboxes"></div>
+      <button onclick="saveRecord()">儲存紀錄</button>
+      <button
+        id="deleteBtn"
+        onclick="deleteCurrentPostcard()"
+        style="display: none; background: #999"
+      >
+        刪除此明信片
+      </button>
+      <button
+        id="cancelBtn"
+        onclick="cancelEdit()"
+        style="display: none; background: #999"
+      >
+        取消編輯
+      </button>
+    </div>
+
+    <div class="section">
+      <h3>匯出資料</h3>
+      <button onclick="exportCSV()">匯出 CSV</button>
+    </div>
+
+    <div class="section">
+      <div id="recordsTableContainer">
+        <table id="recordsTable">
+          <thead>
+            <tr>
+              <th>明信片名稱</th>
+              <th>【好友】寄送日期</th>
+            </tr>
+          </thead>
+          <tbody id="recordsTableBody">
+            <!-- Records will be inserted here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
