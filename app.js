@@ -105,6 +105,7 @@ function renderFriends() {
       '<div class="friend-list-header">好友名單 (' +
       friends.length +
       ") （點選編輯）</div>" +
+      '<input type="text" id="friendFilterInput" placeholder="搜尋好友" class="friend-filter-input" onkeyup="filterFriends()">' +
       '<div class="friend-list-items"></div>';
 
     const itemsContainer = friendListDiv.querySelector(".friend-list-items");
@@ -124,6 +125,20 @@ function renderFriends() {
     const label = document.createElement("label");
     label.innerHTML = `<input type="checkbox" value="${friend}" class="friend-check"> ${friend}`;
     checkboxDiv.appendChild(label);
+  });
+}
+
+// Filter friend list
+function filterFriends() {
+  const input = document.getElementById("friendFilterInput");
+  if (!input) return;
+
+  const keyword = input.value.trim().toLowerCase();
+  const items = document.querySelectorAll("#friendList .friend-item");
+
+  items.forEach((item) => {
+    const name = item.textContent.toLowerCase();
+    item.style.display = name.includes(keyword) ? "" : "none";
   });
 }
 
@@ -173,7 +188,9 @@ function renderPostcards() {
     listElement.innerHTML =
       '<div class="postcard-list-header">已存明信片 (' +
       uniquePostcards.length +
-      ' 張)（點選編輯）</div><div class="postcard-list-items"></div>';
+      " 張)（點選編輯）" +
+      '<input type="text" id="postcardFilterInput" placeholder="搜尋明信片" class="postcard-filter-input" onkeyup="filterPostcard()">' +
+      '</div><div class="postcard-list-items"></div>';
 
     const itemsContainer = listElement.querySelector(".postcard-list-items");
     uniquePostcards.sort().forEach((postcard) => {
@@ -185,6 +202,20 @@ function renderPostcards() {
       itemsContainer.appendChild(item);
     });
   }
+}
+
+// Filter postcard list
+function filterPostcard() {
+  const input = document.getElementById("postcardFilterInput");
+  if (!input) return;
+
+  const keyword = input.value.trim().toLowerCase();
+  const items = document.querySelectorAll("#postcardList .postcard-list-item");
+
+  items.forEach((item) => {
+    const name = item.textContent.toLowerCase();
+    item.style.display = name.includes(keyword) ? "" : "none";
+  });
 }
 
 function exportCSV() {
