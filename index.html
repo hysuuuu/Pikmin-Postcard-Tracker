@@ -25,6 +25,12 @@
         font-size: 28px;
         margin-bottom: 30px;
       }
+      .info-text {
+        font-size: 13px;
+        color: #444;
+        line-height: 1.6;
+        margin-bottom: 10px;
+      }
       .section {
         margin-bottom: 25px;
         padding: 20px;
@@ -211,6 +217,24 @@
   </head>
   <body>
     <h2>皮克敏明信片紀錄</h2>
+    <div id="information" class="info-text"></div>
+    <button id="showInfoBtn" onclick="showReadme()">展開使用說明</button>
+    <div
+      id="readmeContainer"
+      style="
+        display: none;
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin-top: 10px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+      "
+    >
+      <div id="readmeContent"></div>
+      <button id="closeInfoBtn" onclick="closeReadme()" , style="display: none">
+        縮小使用說明
+      </button>
+    </div>
 
     <div class="section">
       <h3>管理好友清單</h3>
@@ -290,5 +314,6 @@
     </div>
 
     <script src="app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   </body>
 </html>

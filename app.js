@@ -16,6 +16,37 @@ window.onload = function () {
   }
 };
 
+// Show info
+async function showReadme() {
+  const container = document.getElementById("readmeContainer");
+
+  try {
+    const response = await fetch("README.md");
+
+    if (!response.ok) {
+      throw new Error("找不到說明文件");
+    }
+
+    const markdownText = await response.text();
+    document.getElementById("readmeContent").innerHTML =
+      marked.parse(markdownText);
+    container.style.display = "block";
+    document.getElementById("closeInfoBtn").style.display = "block";
+    document.getElementById("showInfoBtn").style.display = "none";
+  } catch (error) {
+    container.innerHTML = `<p style="color: red;">讀取失敗：${error.message}</p>`;
+    container.style.display = "block";
+  }
+}
+
+// Close info
+function closeReadme() {
+  document.getElementById("readmeContainer").style.display = "none";
+  document.getElementById("closeInfoBtn").style.display = "none";
+  document.getElementById("showInfoBtn").style.display = "block";
+  return;
+}
+
 // Add friend
 function addFriend() {
   const name = document.getElementById("newFriendName").value.trim();
