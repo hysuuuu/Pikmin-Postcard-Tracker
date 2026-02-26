@@ -244,13 +244,35 @@ function filterPostcard() {
 
 function exportCSV() {
   let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-  csvContent += "明信片,好友,寄出日期\n";
 
+  // Header with 4 columns
+  csvContent += "好友列表,明信片,好友,寄出日期\n";
+
+  // Prepare records data
+  const recordsData = [];
   records.forEach((record) => {
     record.friends.forEach((friend) => {
-      csvContent += `${record.postcard},${friend},${record.date}\n`;
+      recordsData.push({
+        postcard: record.postcard,
+        friend: friend,
+        date: record.date,
+      });
     });
   });
+
+  // Determine the maximum number of rows needed
+  const maxRows = Math.max(friends.length, recordsData.length);
+
+  // Write data rows (friends list parallel to records)
+  for (let i = 0; i < maxRows; i++) {
+    const friendName = i < friends.length ? friends[i] : "";
+    const recordData =
+      i < recordsData.length
+        ? recordsData[i]
+        : { postcard: "", friend: "", date: "" };
+
+    csvContent += `${friendName},${recordData.postcard},${recordData.friend},${recordData.date}\n`;
+  }
 
   const encodedUri = encodeURI(csvContent);
   const link = document.createElement("a");
@@ -488,59 +510,58 @@ function importCSV(event) {
     const content = e.target.result;
     const lines = content.split("\n").filter((line) => line.trim() !== "");
 
-    // Validate format: first line should be header, skip if it's the expected header
+    const newRecords = [];
+    const importedFriends = [];
+
     let startIndex = 0;
-    if (
-      lines[0].toLowerCase().includes("明信片") ||
-      lines[0].toLowerCase().includes("postcard")
-    ) {
+    if (lines.length > 0 && lines[0].includes("好友列表")) {
       startIndex = 1;
     }
 
-    const newRecords = [];
     for (let i = startIndex; i < lines.length; i++) {
-      const parts = lines[i].split(",").map((p) => p.trim());
+      const line = lines[i].trim();
+      const parts = line.split(",").map((p) => p.trim());
 
-      // Check if row has 2 or 3 columns (date is optional)
-      if (parts.length < 2 || parts.length > 3) {
-        alert(`CSV格式錯誤，明信片和好友不能為空（寄出日期可為空）\n`);
-        event.target.value = ""; // Reset file input
-        return;
+      // Should have 4 columns: 好友列表, 明信片, 好友, 寄出日期
+      if (parts.length !== 4) {
+        continue;
       }
 
-      const [postcard, friend, date] = parts;
+      const [friendListName, postcard, recordFriend, date] = parts;
 
-      // Validate that postcard and friend are non-empty
-      if (!postcard || !friend) {
-        alert(`CSV格式錯誤，明信片和好友不能為空（寄出日期可為空）\n`);
-        event.target.value = ""; // Reset file input
-        return;
+      // Import friend from first column (好友列表)
+      if (friendListName && !importedFriends.includes(friendListName)) {
+        importedFriends.push(friendListName);
       }
 
-      // Check if friend already exists, if not add to friends list
-      if (!friends.includes(friend)) {
-        friends.push(friend);
-      }
+      // Import record from columns 2-4 (明信片, 好友, 寄出日期)
+      if (postcard && recordFriend) {
+        // Also add friend from record if not in list
+        if (!importedFriends.includes(recordFriend)) {
+          importedFriends.push(recordFriend);
+        }
 
-      newRecords.push({
-        postcard: postcard,
-        friends: [friend],
-        date: date || new Date().toLocaleDateString(), // Use current date if empty
-      });
+        newRecords.push({
+          postcard: postcard,
+          friends: [recordFriend],
+          date: date || new Date().toLocaleDateString(),
+        });
+      }
     }
 
-    // If validation passed, import records
-    if (newRecords.length > 0) {
-      records = records.concat(newRecords);
+    // If validation passed, import data
+    if (importedFriends.length > 0 || newRecords.length > 0) {
+      friends = importedFriends;
+      records = newRecords;
       localStorage.setItem("pikmin_friends", JSON.stringify(friends));
       localStorage.setItem("pikmin_records", JSON.stringify(records));
 
       renderFriends();
       renderPostcards();
       renderRecordsTable();
-      alert(`成功匯入`);
+      alert(`成功匯入 ${friends.length} 位好友和 ${records.length} 筆記錄`);
     } else {
-      alert("CSV檔案中沒有有效的資料行");
+      alert("CSV檔案中沒有有效的資料");
     }
 
     event.target.value = ""; // Reset file input
