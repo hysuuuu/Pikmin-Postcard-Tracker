@@ -104,7 +104,7 @@ function renderFriends() {
     friendListDiv.innerHTML =
       '<div class="friend-list-header">好友名單 (' +
       friends.length +
-      ") （點選編輯）</div>" +
+      " 人) （點選編輯）</div>" +
       '<input type="text" id="friendFilterInput" placeholder="搜尋好友" class="friend-filter-input" onkeyup="filterFriends()">' +
       '<div class="friend-list-items"></div>';
 
