@@ -152,17 +152,41 @@ function saveRecord() {
 
   if (selectedFriends.length === 0) return alert("請至少選擇一位好友");
 
-  // If editing mode, delete old records first
+  // If editing mode, preserve original dates for existing friends
   if (editingPostcard) {
+    const existingDates = {};
+    records
+      .filter((r) => r.postcard === editingPostcard)
+      .forEach((record) => {
+        record.friends.forEach((friend) => {
+          if (!existingDates[friend]) {
+            existingDates[friend] = record.date;
+          }
+        });
+      });
+
+    // Remove old records for this postcard
     records = records.filter((r) => r.postcard !== editingPostcard);
+
+    // Create individual records for each friend
+    selectedFriends.forEach((friend) => {
+      records.push({
+        postcard: postcard,
+        friends: [friend],
+        date: existingDates[friend] || new Date().toLocaleDateString(), // Use existing date or current date for new friends
+      });
+    });
+  } else {
+    // Normal add mode: create individual records for each friend
+    selectedFriends.forEach((friend) => {
+      records.push({
+        postcard: postcard,
+        friends: [friend],
+        date: new Date().toLocaleDateString(),
+      });
+    });
   }
 
-  const newRecord = {
-    postcard: postcard,
-    friends: selectedFriends,
-    date: new Date().toLocaleDateString(),
-  };
-  records.push(newRecord);
   localStorage.setItem("pikmin_records", JSON.stringify(records));
 
   document.getElementById("postcardName").value = "";
